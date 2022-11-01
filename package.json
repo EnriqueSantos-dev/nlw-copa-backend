@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "nodemon src/main/server.ts"
   },
+  "prisma": { 
+    "seed": "ts-node prisma/seed.ts"
+  },
   "keywords": [],
   "author": "Enrique",
   "license": "ISC",

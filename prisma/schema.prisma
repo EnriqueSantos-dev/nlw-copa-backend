@@ -21,6 +21,60 @@ model Pool {
   title     String
   code      String   @unique
   createdAt DateTime @default(now()) @map("created_at")
+  onwerId   String?
+
+  owner        User?         @relation(fields: [onwerId], references: [id])
+  particapants Particapant[]
 
   @@map("pools")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  participatingAt Particapant[]
+  ownPools        Pool[]
+
+  @@map("users")
+}
+
+model Game {
+  id                    String   @id @default(cuid())
+  data                  DateTime
+  firstTeamCountryCode  String   @map("first_team_country_code")
+  secondTeamCountryCode String   @map("second_team_country_code")
+  guesses               Guess[]
+
+  @@map("games")
+}
+
+model Guess {
+  id               String   @id @default(cuid())
+  firstTeamPoints  Int      @map("first_team_points")
+  secondTeamPoints Int      @map("second_team_points")
+  createdAt        DateTime @default(now()) @map("created_at")
+  gameId           String   @map("game_id")
+  particapantId    String   @map("particapant_id")
+
+  game        Game        @relation(fields: [gameId], references: [id])
+  particapant Particapant @relation(fields: [particapantId], references: [id])
+
+  @@map("guesses")
+}
+
+model Particapant {
+  id      String  @id @default(cuid())
+  guesses Guess[]
+  userId  String
+  poolId  String
+
+  user User @relation(fields: [userId], references: [id])
+  pool Pool @relation(fields: [poolId], references: [id])
+
+  @@unique([userId, poolId])
+  @@map("particapants")
 }
