@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import { PrismaClient } from '@prisma/client'
 
-export default abstract class Prisma {
-  public static prisma: PrismaClient
+export default class Prisma {
+  public static prisma: PrismaClient | null = null
 
-  static get (): PrismaClient {
+  static getInstance (): PrismaClient {
     if (this.prisma === null) {
       this.prisma = new PrismaClient()
     }
