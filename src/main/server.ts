@@ -11,6 +11,16 @@ const bootsStrap = (): void => {
     logger: true
   })
 
+  fastify.get('/pools/count', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const pools = await prisma.pool.count()
+
+      return await reply.code(200).send({ count: pools })
+    } catch (error) {
+      return await reply.code(500).send('Internal Server Error')
+    }
+  })
+
   fastify.post('/pools', async (request: FastifyRequest, reply: FastifyReply) => {
     const schemaCreatePool = z.object({
       title: z.string({ required_error: 'O nome é obrigatório para criar o bolão' }).min(5, {
