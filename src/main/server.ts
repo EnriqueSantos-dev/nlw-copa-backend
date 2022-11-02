@@ -21,6 +21,16 @@ const bootsStrap = (): void => {
     }
   })
 
+  fastify.get('/guesses/count', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const lengthGuesses = await prisma.guess.count()
+
+      return await reply.code(200).send({ count: lengthGuesses })
+    } catch (error) {
+      return await reply.code(500).send('Internal Server Error')
+    }
+  })
+
   fastify.get('/pools/count', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const pools = await prisma.pool.count()
