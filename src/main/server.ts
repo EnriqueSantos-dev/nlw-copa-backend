@@ -11,6 +11,16 @@ const bootsStrap = (): void => {
     logger: true
   })
 
+  fastify.get('/users/count', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const lengthUsers = await prisma.user.count()
+
+      return await reply.code(200).send({ count: lengthUsers })
+    } catch (error) {
+      return await reply.code(500).send('Internal Server Error')
+    }
+  })
+
   fastify.get('/pools/count', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const pools = await prisma.pool.count()
