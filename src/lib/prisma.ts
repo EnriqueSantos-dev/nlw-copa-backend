@@ -12,3 +12,5 @@ export default class Prisma {
     return this.prisma
   }
 }
+
+export const prisma = Prisma.getInstance()

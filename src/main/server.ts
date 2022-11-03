@@ -1,11 +1,13 @@
 import 'dotenv/config'
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify'
+import Fastify from 'fastify'
 import cors from '@fastify/cors'
-import { z } from 'zod'
-import Prisma from './factories/prisma-client'
-import ShortUniqueId from 'short-unique-id'
+import jwt from '@fastify/jwt'
 
-const prisma = Prisma.getInstance()
+import { poolRoutes } from '../routes/pool'
+import { gameRoutes } from '../routes/game'
+import { guessRoutes } from '../routes/guess'
+import { userRoutes } from '../routes/user'
+import { authRoutes } from '../routes/auth'
 
 const bootsStrap = async (): Promise<void> => {
   const fastify = Fastify({
@@ -13,81 +15,15 @@ const bootsStrap = async (): Promise<void> => {
   })
 
   await fastify.register(cors)
+  await fastify.register(jwt, {
+    secret: process.env.SECRET_KEY as string
+  })
 
-  fastify.get(
-    '/users/count',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const lengthUsers = await prisma.user.count()
-
-        return await reply.code(200).send({ count: lengthUsers })
-      } catch (error) {
-        return await reply.code(500).send('Internal Server Error')
-      }
-    }
-  )
-
-  fastify.get(
-    '/guesses/count',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const lengthGuesses = await prisma.guess.count()
-
-        return await reply.code(200).send({ count: lengthGuesses })
-      } catch (error) {
-        return await reply.code(500).send('Internal Server Error')
-      }
-    }
-  )
-
-  fastify.get(
-    '/pools/count',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const pools = await prisma.pool.count()
-
-        return await reply.code(200).send({ count: pools })
-      } catch (error) {
-        return await reply.code(500).send('Internal Server Error')
-      }
-    }
-  )
-
-  fastify.post(
-    '/pools',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const schemaCreatePool = z.object({
-        title: z
-          .string({ required_error: 'O nome é obrigatório para criar o bolão' })
-          .min(5, {
-            message: 'O nome do bolão precisa ter pelo menos 5 letras'
-          })
-      })
-
-      try {
-        const requestValidated = schemaCreatePool.safeParse(request.body)
-
-        if (!requestValidated.success) {
-          return await reply.code(400).send(requestValidated.error.format())
-        }
-
-        const generateCode = new ShortUniqueId({ length: 6 })
-
-        const code = await prisma.pool.create({
-          select: {
-            code: true
-          },
-          data: {
-            title: requestValidated.data.title,
-            code: String(generateCode()).toUpperCase()
-          }
-        })
-        return await reply.code(201).send(code)
-      } catch (error) {
-        return await reply.code(500).send('Internal server error')
-      }
-    }
-  )
+  await fastify.register(poolRoutes)
+  await fastify.register(gameRoutes)
+  await fastify.register(guessRoutes)
+  await fastify.register(userRoutes)
+  await fastify.register(authRoutes)
 
   fastify.listen(
     {
@@ -99,7 +35,7 @@ const bootsStrap = async (): Promise<void> => {
       )
     }
   )
-}
+};
 
 (async () => {
   await bootsStrap()

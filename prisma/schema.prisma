@@ -34,6 +34,7 @@ model User {
   name      String
   email     String   @unique
   avatarUrl String?
+  googleId  String?  @unique
   createdAt DateTime @default(now()) @map("created_at")
 
   participatingAt Particapant[]
@@ -63,6 +64,7 @@ model Guess {
   game        Game        @relation(fields: [gameId], references: [id])
   particapant Particapant @relation(fields: [particapantId], references: [id])
 
+  @@unique([particapantId, gameId])
   @@map("guesses")
 }
 
